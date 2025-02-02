@@ -4,7 +4,8 @@
   "description": "An app for developers for making conections and for doing collaborations",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+     "start" : "node src/app.js",
+     "dev" : "nodemon src/app.js"
   },
   "keywords": [
     "node.js",
