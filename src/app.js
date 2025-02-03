@@ -2,28 +2,26 @@ const express = require("express"); //requirng express.js
 const app = new express(); //creating an instance of express
 
 //defining routes
-app.use("/user",(req,res)=>{
-  //adding data
-  res.send("I am a use call")
+
+app.get("/a(bc)?c", (req, res)=>{
+  res.send("hello from server1");
 })
-app.get("/user" , (req,res)=>{
-  res.send({name: "nadiyee" , surname : "rajpoot"});
+app.get("/ab?c", (req, res)=>{
+  res.send("hello from server");
 })
 
-app.post("/user",(req,res)=>{
-  //adding data
-  res.send("data added successfully")
+app.get("/a(bc)+d", (req, res)=>{
+  res.send("hello from server3");
 })
-app.delete("/user",(req,res)=>{
-  //data deleted
-   res.send("data deleted successfully");
+app.get("/ab+c", (req, res)=>{
+  res.send("hello from server2");
 })
-
-app.patch("/user" ,(req,res)=>{
-  //data updated
-  res.send("data updated successfully")
+app.get("/ab*c", (req, res)=>{
+  res.send("hello from nadiyee");
 })
-
-app.listen(4444 , ()=>{
-    console.log("server running successfully");
+app.get("/*fly$/", (req, res)=>{
+  res.send("hello from butterfly");
+})
+app.listen(4444, () => {
+  console.log("server running successfully");
 });
