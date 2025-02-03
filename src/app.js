@@ -3,14 +3,33 @@ const app = new express(); //creating an instance of express
 
 //defining routes
 
-app.get("/user", (req, res)=>{
-  console.log(req.query);
-  res.send("hello");
-})
-app.get("/user/:userId", (req, res)=>{
-  console.log(req.params);
-  res.send("hello1");
-})
+app.use("/", (req, res, next) => {
+  next();
+});
+
+app.get(
+  "/user",
+  [
+    (req, res, next) => {
+      next();
+    },
+    (req, res, next) => {
+      next();
+    },
+  ],
+
+  (req, res, next) => {
+    console.log("3");
+    // res.send("hello3");
+    next();
+  },
+  (req, res, next) => {
+    console.log("4");
+    // res.send("hello4");
+    next();
+  }
+);
+
 app.listen(4444, () => {
   console.log("server running successfully");
 });
