@@ -3,24 +3,13 @@ const app = new express(); //creating an instance of express
 
 //defining routes
 
-app.get("/a(bc)?c", (req, res)=>{
-  res.send("hello from server1");
+app.get("/user", (req, res)=>{
+  console.log(req.query);
+  res.send("hello");
 })
-app.get("/ab?c", (req, res)=>{
-  res.send("hello from server");
-})
-
-app.get("/a(bc)+d", (req, res)=>{
-  res.send("hello from server3");
-})
-app.get("/ab+c", (req, res)=>{
-  res.send("hello from server2");
-})
-app.get("/ab*c", (req, res)=>{
-  res.send("hello from nadiyee");
-})
-app.get("/*fly$/", (req, res)=>{
-  res.send("hello from butterfly");
+app.get("/user/:userId", (req, res)=>{
+  console.log(req.params);
+  res.send("hello1");
 })
 app.listen(4444, () => {
   console.log("server running successfully");
