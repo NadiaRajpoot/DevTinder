@@ -1,20 +1,14 @@
 const express = require("express"); //requirng express.js
 const app = new express(); //creating an instance of express
+const adminAuth = require("./middlewares/AdminAuth");
 
-app.use("/admin", (req, res, next) => {
-  const token = "xyz";
-  const isAdmnAuth = token === "xyz";
-  console.log("/admin");
-  if (!isAdmnAuth) {
-    res.status(401).send("unauth");
-  } else {
-    next();
-  }
+app.get("/admin/getData", adminAuth, (req, res) => {
+  console.log("getting admin Data");
+  res.send("getData");
 });
-
-app.get("/admin/getData", (req, res) => {
-  console.log("/admindata");
-  res.send("getData")
+app.get("/admin/deleteData", (req, res) => {
+  console.log("deleting admin data");
+  res.send("delete Data");
 });
 
 app.listen(4444, () => {
