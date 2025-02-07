@@ -5,55 +5,89 @@ const connectDB = require("./config/database");
 
 app.use(express.json());
 
-//adding user to the dataBase
-// app.post("/signup", async (req, res) => {
-//   const user = new User(req.body);
-//   try {
-//     await user.save();
-//     res.send("user added successfully");
-//   } catch (err) {
-//     res.status(400).send(err.message);
-//   }
-// });
-
-// //getting user to the database
-// app.get("/user" , async(req , res)=>{
-//   try{
-//     const user = await User.findOne({emailId: req.body.emailId});
-//     res.send(user);
-//   }
-//   catch(err){
-//     res.status(400).send(`error: ${err.message}`);
-//   }
-// })
-
-// getting all users
-// app.get("/user", async (req, res) => {
-//   try {
-//     const users = await User.find();
-
-//     if (!users) {
-//       res.status(404).send("user not found");
-//     } else {
-//       res.send(users);
-//     }
-//   } catch (err) {
-//     res.status(400).send(`error: ${err.message}`);
-//   }
-// });
-
-//getting count of users with specific property
-app.get("/user/:firstName", async (req, res) => {
-  console.log(req.params.firstName)
+// Add a new user to the database
+app.post("/signup", async (req, res) => {
   try {
-    const count = await User.countDocuments({ firstName: req.params.firstName });
-
-    res.json({ count }); // ✅ Always send as JSON
+    const user = new User(req.body);
+    await user.save();
+    res.status(201).send("User added successfully");
   } catch (err) {
-    res.status(400).json({ error: "wrong" });
+    res.status(400).send(`Error: ${err.message}`);
   }
 });
 
+
+
+// Get a user by email
+app.get("/user/email", async (req, res) => {
+  try {
+    const user = await User.findOne({ emailId: req.body.emailId });
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    res.send(user);
+  } catch (err) {
+    res.status(400).send(`Error: ${err.message}`);
+  }
+});
+
+// Get all users
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find();
+    if (users.length === 0) {
+      return res.status(404).send("No users found");
+    }
+    res.send(users);
+  } catch (err) {
+    res.status(400).send(`Error: ${err.message}`);
+  }
+});
+
+// Get a user by ID
+app.get("/user/:userId", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    res.send(user);
+  } catch (err) {
+    res.status(400).send(`Error: ${err.message}`);
+  }
+});
+
+
+// Delete a user by ID
+app.delete("/user/:userId", async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.userId);
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    res.send("User deleted successfully");
+  } catch (err) {
+    res.status(400).send(`Error: ${err.message}`);
+  }
+});
+
+
+// Update a user by ID
+app.patch("/user/:userId", async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.userId,
+      { firstName: "AhsanJutt" }, // Hardcoded for now, but you can use req.body for dynamic updates
+      { new: true } // Return the updated document
+    );
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    res.send(user);
+  } catch (err) {
+    res.status(400).send(`Error: ${err.message}`);
+  }
+});
 
 connectDB()
   .then(() => {
