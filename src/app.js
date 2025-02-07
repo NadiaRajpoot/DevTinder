@@ -59,9 +59,9 @@ app.get("/user/:userId", async (req, res) => {
 
 
 // Delete a user by ID
-app.delete("/user/:userId", async (req, res) => {
+app.delete("/user", async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.userId);
+    const user = await User.findByIdAndDelete(req.body.userId);
     if (!user) {
       return res.status(404).send("User not found");
     }
@@ -73,17 +73,17 @@ app.delete("/user/:userId", async (req, res) => {
 
 
 // Update a user by ID
-app.patch("/user/:userId", async (req, res) => {
+app.patch("/user", async (req, res) => {
   try {
+    
     const user = await User.findByIdAndUpdate(
-      req.params.userId,
-      { firstName: "AhsanJutt" }, // Hardcoded for now, but you can use req.body for dynamic updates
-      { new: true } // Return the updated document
+      req.body.userId, req.body, {runValidators: true}
+
     );
     if (!user) {
       return res.status(404).send("User not found");
     }
-    res.send(user);
+    res.send("user updated successfully");
   } catch (err) {
     res.status(400).send(`Error: ${err.message}`);
   }
