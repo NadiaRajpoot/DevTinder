@@ -9,6 +9,10 @@ app.use(express.json());
 app.post("/signup", async (req, res) => {
   try {
     const user = new User(req.body);
+    if(req.body.skills.length>=10){
+      const errorMessage = "You can only add a maximum of 10 skills. Please remove some skills and try again."
+      throw new Error(errorMessage);
+    }
     await user.save();
     res.status(201).send("User added successfully");
   } catch (err) {
@@ -59,9 +63,9 @@ app.get("/user/:userId", async (req, res) => {
 
 
 // Delete a user by ID
-app.delete("/user", async (req, res) => {
+app.delete("/user/:userId", async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.body.userId);
+    const user = await User.findByIdAndDelete(req.params.userId);
     if (!user) {
       return res.status(404).send("User not found");
     }
@@ -73,11 +77,33 @@ app.delete("/user", async (req, res) => {
 
 
 // Update a user by ID
-app.patch("/user", async (req, res) => {
+app.patch("/user/:userId", async (req, res) => {
+
   try {
-    
+    const ALLOWED_UPDATES = ['photoURL', 'skills', 'about' , 'gender', 'phone'];
+    // Get the keys from the request body
+    const requestedUpdates = Object.keys(req.body);
+
+    // Check if all requested updates are allowed
+    const isAllowedUpdates = requestedUpdates.every((k)=>ALLOWED_UPDATES.includes(k));
+
+    if (!isAllowedUpdates) {
+        // Find the keys that are not allowed
+        const notAllowedUpdates = requestedUpdates.filter((k) => !ALLOWED_UPDATES.includes(k));
+        const errorMessage = `You are trying to update the following keys which are not allowed: 
+        ${notAllowedUpdates.join(', ')}`;
+        
+        // Throw an error with the detailed message
+        throw new Error(errorMessage);
+    }
+
+    //consition for limited  skills
+    if(req.body.skills.length>=10){
+      const errorMessage = "You can only add a maximum of 10 skills. Please remove some skills and try again."
+      throw new Error(errorMessage);
+    }
     const user = await User.findByIdAndUpdate(
-      req.body.userId, req.body, {runValidators: true}
+      req.params.userId, req.body, {runValidators: true}
 
     );
     if (!user) {
