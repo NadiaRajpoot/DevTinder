@@ -2,17 +2,32 @@ const express = require("express"); //requirng express.js
 const app = new express(); //creating an instance of express
 const User = require("./models/user");
 const connectDB = require("./config/database");
+const {
+  validateSignUpData,
+  validateUpdateData,
+} = require("./utils/validation");
+const bycrypt = require("bcrypt");
 
 app.use(express.json());
 
 // Add a new user to the database
 app.post("/signup", async (req, res) => {
   try {
-    const user = new User(req.body);
-    if(req.body.skills.length>=10){
-      const errorMessage = "You can only add a maximum of 10 skills. Please remove some skills and try again."
-      throw new Error(errorMessage);
-    }
+    //validation
+    validateSignUpData(req);
+
+    //encrypting password
+    const { firstName, lastName, emailId, password } = req.body;
+    const hashedPassword = await bycrypt.hash(password, 10);
+
+    //creating a new instance of user Model-
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: hashedPassword,
+    });
+
     await user.save();
     res.status(201).send("User added successfully");
   } catch (err) {
@@ -20,7 +35,29 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+//login Api
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
 
+    const user = await User.findOne({ emailId: emailId });
+  //checking whether user exists or not!
+    if (!user) {
+      throw new Error("invalid credentials!");
+    }
+
+    //checking if password is correct or not!
+    const isPasswordValid = await bycrypt.compare(password, user.password);
+
+    if (isPasswordValid != true) {
+      throw new Error("invalid credentials!");
+    } else {
+      res.send("login successfull");
+    }
+  } catch (err) {
+    res.status(400).send(`Error: ${err.message}`);
+  }
+});
 
 // Get a user by email
 app.get("/user/email", async (req, res) => {
@@ -61,7 +98,6 @@ app.get("/user/:userId", async (req, res) => {
   }
 });
 
-
 // Delete a user by ID
 app.delete("/user/:userId", async (req, res) => {
   try {
@@ -75,37 +111,15 @@ app.delete("/user/:userId", async (req, res) => {
   }
 });
 
-
 // Update a user by ID
 app.patch("/user/:userId", async (req, res) => {
-
   try {
-    const ALLOWED_UPDATES = ['photoURL', 'skills', 'about' , 'gender', 'phone'];
-    // Get the keys from the request body
-    const requestedUpdates = Object.keys(req.body);
+    //validation
+    validateUpdateData(req);
+    const user = await User.findByIdAndUpdate(req.params.userId, req.body, {
+      runValidators: true,
+    });
 
-    // Check if all requested updates are allowed
-    const isAllowedUpdates = requestedUpdates.every((k)=>ALLOWED_UPDATES.includes(k));
-
-    if (!isAllowedUpdates) {
-        // Find the keys that are not allowed
-        const notAllowedUpdates = requestedUpdates.filter((k) => !ALLOWED_UPDATES.includes(k));
-        const errorMessage = `You are trying to update the following keys which are not allowed: 
-        ${notAllowedUpdates.join(', ')}`;
-        
-        // Throw an error with the detailed message
-        throw new Error(errorMessage);
-    }
-
-    //consition for limited  skills
-    if(req.body.skills.length>=10){
-      const errorMessage = "You can only add a maximum of 10 skills. Please remove some skills and try again."
-      throw new Error(errorMessage);
-    }
-    const user = await User.findByIdAndUpdate(
-      req.params.userId, req.body, {runValidators: true}
-
-    );
     if (!user) {
       return res.status(404).send("User not found");
     }
