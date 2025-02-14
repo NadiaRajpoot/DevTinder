@@ -1,14 +1,20 @@
 const express = require("express"); //requirng express.js
 const app = new express(); //creating an instance of express
 const User = require("./models/user");
+const bcrypt = require("bcrypt");
 const connectDB = require("./config/database");
+const cookieParser = require("cookie-parser");
+
+const userAuth = require("./middlewares/userAuth");
+
 const {
   validateSignUpData,
-  validateUpdateData,
+  
 } = require("./utils/validation");
-const bycrypt = require("bcrypt");
+
 
 app.use(express.json());
+app.use(cookieParser());
 
 // Add a new user to the database
 app.post("/signup", async (req, res) => {
@@ -18,7 +24,7 @@ app.post("/signup", async (req, res) => {
 
     //encrypting password
     const { firstName, lastName, emailId, password } = req.body;
-    const hashedPassword = await bycrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     //creating a new instance of user Model-
     const user = new User({
@@ -47,87 +53,46 @@ app.post("/login", async (req, res) => {
     }
 
     //checking if password is correct or not!
-    const isPasswordValid = await bycrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
 
     if (isPasswordValid != true) {
       throw new Error("invalid credentials!");
     } else {
+      const token = await user.getJwt();
+      res.cookie("token" , token ,{expires: new Date(Date.now() +  60 * 1000)});
       res.send("login successfull");
     }
   } catch (err) {
-    res.status(400).send(`Error: ${err.message}`);
+    res.status(400).send(`Error:  ${err.message}`);
   }
 });
 
-// Get a user by email
-app.get("/user/email", async (req, res) => {
-  try {
-    const user = await User.findOne({ emailId: req.body.emailId });
-    if (!user) {
-      return res.status(404).send("User not found");
-    }
-    res.send(user);
-  } catch (err) {
-    res.status(400).send(`Error: ${err.message}`);
-  }
-});
 
-// Get all users
-app.get("/users", async (req, res) => {
-  try {
-    const users = await User.find();
-    if (users.length === 0) {
-      return res.status(404).send("No users found");
-    }
-    res.send(users);
-  } catch (err) {
-    res.status(400).send(`Error: ${err.message}`);
-  }
-});
+//profile api
+app.get("/profile" ,userAuth,async(req, res)=>{
+ try{
 
-// Get a user by ID
-app.get("/user/:userId", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId);
-    if (!user) {
-      return res.status(404).send("User not found");
-    }
-    res.send(user);
-  } catch (err) {
-    res.status(400).send(`Error: ${err.message}`);
-  }
-});
+ const user = req.user;
+   if(!user){
+    throw new Error("user doesn't exist!")
+   }
+  res.send(user);
 
-// Delete a user by ID
-app.delete("/user/:userId", async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.userId);
-    if (!user) {
-      return res.status(404).send("User not found");
-    }
-    res.send("User deleted successfully");
-  } catch (err) {
-    res.status(400).send(`Error: ${err.message}`);
-  }
-});
+ } catch (err) {
+  res.status(400).send(`Error: ${err.message}`);
+}
+})
 
-// Update a user by ID
-app.patch("/user/:userId", async (req, res) => {
-  try {
-    //validation
-    validateUpdateData(req);
-    const user = await User.findByIdAndUpdate(req.params.userId, req.body, {
-      runValidators: true,
-    });
 
-    if (!user) {
-      return res.status(404).send("User not found");
-    }
-    res.send("user updated successfully");
-  } catch (err) {
-    res.status(400).send(`Error: ${err.message}`);
-  }
-});
+//send connection request
+app.post("/sendConnectionrequest" ,userAuth, async(req ,res)=>{
+  try{
+    const user = req.user;
+  res.send(`${user.firstName} sent connection request`);
+  }catch (err) {
+  res.status(400).send(`Error: ${err.message}`);
+}
+})
 
 connectDB()
   .then(() => {
