@@ -6,28 +6,16 @@ const cookieParser = require("cookie-parser");
 
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
-
-
+const requestRouter = require("./routes/request");
 
 app.use(express.json());
 app.use(cookieParser());
 
 app.use("/", authRouter);
 app.use("/", profileRouter);
+app.use("/", requestRouter);
 
 
-
-
-
-//send connection request
-app.post("/sendConnectionrequest" , async(req ,res)=>{
-  try{
-    const user = req.user;
-  res.send(`${user.firstName} sent connection request`);
-  }catch (err) {
-  res.status(400).send(`Error: ${err.message}`);
-}
-})
 
 connectDB()
   .then(() => {
