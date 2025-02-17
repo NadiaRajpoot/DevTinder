@@ -40,28 +40,27 @@ router.patch("/profile/edit", userAuth, async (req, res) => {
   }
 });
 
-
-//update profile password 
+//update profile password
 router.patch("/profile/password", userAuth, async (req, res) => {
-    try {
-      const { password, newPassword } = req.body;
-      const user = req.user;
-  
-      // Validate current password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        throw new Error("Invalid current password! Please try again.");
-      }
-  
-      //hashedPassword
-      const newPasswordHash = await bcrypt.hash(newPassword , 10);
-      // Update password
-      user.password = newPasswordHash;
-      await user.save(); 
-      res.send("Your password has been updated successfully.");
-    } catch (err) {
-      res.status(400).send(`Error: ${err.message}`);
+  try {
+    const { password, newPassword } = req.body;
+    const user = req.user;
+
+    // Validate current password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error("Invalid current password! Please try again.");
     }
-  });
-  
+
+    //hashedPassword
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    // Update password
+    user.password = newPasswordHash;
+    await user.save();
+    res.send("Your password has been updated successfully.");
+  } catch (err) {
+    res.status(400).send(`Error: ${err.message}`);
+  }
+});
+
 module.exports = router;
