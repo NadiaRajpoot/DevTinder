@@ -1,23 +1,34 @@
 const express = require("express");
-const userAuth = require("../middlewares/userAuth");
-const ConnectionRequest = require("../models/conncetionRequest");
-const { populate } = require("../models/user");
+const userAuth = require("../middlewares/userAuth"); // Middleware to authenticate users
+const ConnectionRequest = require("../models/conncetionRequest"); // ConnectionRequest model
+const User = require("../models/user"); // User model
 const router = express.Router();
 
-const SAFE_DATA = ["firstName", "lastName"];
+// Fields to include in user data for safe sharing
+const USER_SAFE_DATA = [
+  "firstName",
+  "lastName",
+  "about",
+  "age",
+  "gender",
+  "mobileNumber",
+  "photoURL",
+  "skills",
+];
 
-//api for getting all recieved requests
+// API to get all received connection requests
 router.get("/user/requests/recieved", userAuth, async (req, res) => {
   try {
-    const loggedInUser = req.user;
+    const loggedInUser = req.user; // Authenticated user object
 
+    // Fetch all received connection requests with "interested" status
     const connectionRequests = await ConnectionRequest.find({
       toUserId: loggedInUser._id,
       status: "interested",
-    }).populate("fromUserId", SAFE_DATA);
+    }).populate("fromUserId", USER_SAFE_DATA); // Populate sender's data
 
     if (!connectionRequests) {
-      res.status(404).json({ message: "No pending requests found!" });
+      return res.status(404).json({ message: "No pending requests found!" });
     }
 
     res.json({
@@ -29,35 +40,64 @@ router.get("/user/requests/recieved", userAuth, async (req, res) => {
   }
 });
 
-//API for getting matched
+// API to get matched users (mutual accepted requests)
 router.get("/user/requests/matched", userAuth, async (req, res) => {
   try {
-    const loggedInUser = req.user;
+    const loggedInUser = req.user; // Authenticated user object
 
-    //matched requests
+    // Fetch all requests where the user is either the sender or receiver and status is "accepted"
     const matchedRequests = await ConnectionRequest.find({
       $or: [
         { toUserId: loggedInUser._id, status: "accepted" },
         { fromUserId: loggedInUser._id, status: "accepted" },
       ],
     })
-      .populate("fromUserId", SAFE_DATA)
-      .populate("toUserId", SAFE_DATA);
+      .populate("fromUserId", USER_SAFE_DATA) // Populate sender's data
+      .populate("toUserId", USER_SAFE_DATA); // Populate receiver's data
 
+    // Extract only the matched user data (the other user in the connection)
     const data = matchedRequests.map((row) => {
       if (row.fromUserId.toString() === loggedInUser._id.toString()) {
-        return row.toUserId;
+        return row.toUserId; // If the logged-in user is the sender, return the receiver
       }
-      return row.fromUserId;
+      return row.fromUserId; // Otherwise, return the sender
     });
 
     if (!matchedRequests) {
-      res.status(404).json({ messsage: "No matched found!" });
+      return res.status(404).json({ message: "No matches found!" });
     }
 
-    res.json({ message: "data fetched successfully!", data: data });
+    res.json({ message: "Data fetched successfully!", data: data });
+  } catch (err) {
+    res.status(400).send(`Error: ${err.message}`);
+  }
+});
 
-    //display according to toUser and fromUser
+// API to get user feed (users not yet connected or interacted with)
+router.get("/feed", userAuth, async (req, res) => {
+  try {
+    const loggedInUser = req.user; // Authenticated user object
+
+    // Fetch all connection requests involving the logged-in user
+    const connectionRequests = await ConnectionRequest.find({
+      $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
+    }).select("fromUserId toUserId"); // Only select user IDs
+
+    const hideUsersFromFeed = new Set(); // Use a set to store IDs of users to hide
+
+    // Add both sender and receiver IDs from the connection requests to the set
+    connectionRequests.forEach((req) => {
+      hideUsersFromFeed.add(req.fromUserId.toString());
+      hideUsersFromFeed.add(req.toUserId.toString());
+    });
+
+    // Fetch users not involved in any connection with the logged-in user
+    const users = await User.find({
+      _id: { $nin: Array.from(hideUsersFromFeed) }, // Exclude IDs in the set
+      _id: {$ne: loggedInUser._id}
+    }).select(USER_SAFE_DATA); // Select safe fields only
+
+    res.json({ message: "Data fetched successfully!", data: users });
   } catch (err) {
     res.status(400).send(`Error: ${err.message}`);
   }
