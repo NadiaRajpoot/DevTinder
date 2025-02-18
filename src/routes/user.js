@@ -45,6 +45,7 @@ router.get("/user/requests/matched", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user; // Authenticated user object
 
+
     // Fetch all requests where the user is either the sender or receiver and status is "accepted"
     const matchedRequests = await ConnectionRequest.find({
       $or: [
@@ -78,6 +79,12 @@ router.get("/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user; // Authenticated user object
 
+    const pageNumber = parseInt(req.query.page) || 1;
+   let limit = req.query.limit || 10
+    limit = limit > 50  ?  50 : limit;
+    const skip = (pageNumber-1) * limit;
+
+
     // Fetch all connection requests involving the logged-in user
     const connectionRequests = await ConnectionRequest.find({
       $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
@@ -95,7 +102,7 @@ router.get("/feed", userAuth, async (req, res) => {
     const users = await User.find({
       _id: { $nin: Array.from(hideUsersFromFeed) }, // Exclude IDs in the set
       _id: {$ne: loggedInUser._id}
-    }).select(USER_SAFE_DATA); // Select safe fields only
+    }).select(USER_SAFE_DATA).skip(skip).limit(limit)
 
     res.json({ message: "Data fetched successfully!", data: users });
   } catch (err) {
