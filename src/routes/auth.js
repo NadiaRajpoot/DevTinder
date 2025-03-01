@@ -51,7 +51,7 @@ router.post("/login", async (req, res) => {
       res.cookie("token", token, {
         expires: new Date(Date.now() + 8 * 3600000),
       });
-      res.send("login successfull");
+      res.json({message: "login successfull" , data:user});
     }
   } catch (err) {
     res.status(400).send(`Error:  ${err.message}`);
