@@ -8,6 +8,7 @@ const bcrypt = require("bcrypt");
 router.get("/profile/view", userAuth, async (req, res) => {
   try {
     const user = req.user;
+
     if (!user) {
       throw new Error("User doesn't exist!");
     }
@@ -28,6 +29,8 @@ router.get("/profile/view", userAuth, async (req, res) => {
 // Profile Edit API
 router.patch("/profile/edit", userAuth, async (req, res) => {
   try {
+    console.log(validateProfileUpdateData(req));
+
     if (!validateProfileUpdateData(req)) {
       throw new Error("Invalid edit request!");
     }

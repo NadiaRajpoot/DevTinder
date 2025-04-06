@@ -12,10 +12,11 @@ const userSchema = new mongoose.Schema(
     },
     lastName: {
       type: String,
+      required: [true, "lastName is required!"],
     },
     emailId: {
       type: String,
-      required: [true, "lastName is requuired!"],
+     
       lowercase: true,
       trim: true,
       unique: [true, "Email Id  is already exists"],
