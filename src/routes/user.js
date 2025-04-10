@@ -31,6 +31,10 @@ router.get("/user/requests/recieved", userAuth, async (req, res) => {
       return res.status(404).json({ message: "No pending requests found!" });
     }
 
+   const data = connectionRequests.map((row)=>{
+     return row.fromUserId;
+    })
+    
     res.json({
       message: "Data fetched successfully!",
       data: connectionRequests,
@@ -57,18 +61,18 @@ router.get("/user/requests/matched", userAuth, async (req, res) => {
       .populate("toUserId", USER_SAFE_DATA); // Populate receiver's data
 
     // Extract only the matched user data (the other user in the connection)
-    const data = matchedRequests.map((row) => {
-      if (row.fromUserId.toString() === loggedInUser._id.toString()) {
-        return row.toUserId; // If the logged-in user is the sender, return the receiver
-      }
-      return row.fromUserId; // Otherwise, return the sender
-    });
+    // const data = matchedRequests.map((row) => {
+    //   if (row.fromUserId.toString() === loggedInUser._id.toString()) {
+    //     return row.toUserId; // If the logged-in user is the sender, return the receiver
+    //   }
+    //   return row.fromUserId; // Otherwise, return the sender
+    // });
 
     if (!matchedRequests) {
       return res.status(404).json({ message: "No matches found!" });
     }
 
-    res.json({ message: "Data fetched successfully!", data: data });
+    res.json({ message: "Data fetched successfully!", data: matchedRequests });
   } catch (err) {
     res.status(400).send(`Error: ${err.message}`);
   }

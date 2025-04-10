@@ -4,6 +4,7 @@ const userAuth = require("../middlewares/userAuth");
 const ConnectionRequest = require("../models/conncetionRequest");
 const User = require("../models/user");
 
+//send request api
 router.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {
   try {
     const fromUserId = req.user._id;
@@ -97,4 +98,30 @@ router.post(
     }
   }
 );
+//api to delete request
+router.delete("/request/remove/:requestId", userAuth, async (req, res) => {
+  try {
+    
+    const { requestId } = req.params;
+
+    const connectionRequest = await ConnectionRequest.findOne({
+      _id: requestId,
+      status: "accepted",
+    })
+
+    // Check if it exists and has status "accepted"
+    if (!connectionRequest ) {
+      return res.status(404).send("Connection request not found ");
+    }
+
+
+    // Delete the connection request
+    await ConnectionRequest.findByIdAndDelete(requestId);
+
+    res.send({ message: "Connection request removed successfully." });
+  } catch (err) {
+    res.status(400).send(`Error: ${err.message}`);
+  }
+});
+
 module.exports = router;
