@@ -21,6 +21,7 @@ router.post("/signup", async (req, res) => {
       lastName,
       emailId,
       password: hashedPassword,
+    
     });
 
     await user.save();
@@ -62,7 +63,7 @@ router.post("/login", async (req, res) => {
 router.post("/logout", async (req, res) => {
   res
     .cookie("token", null, { expires: new Date(Date.now()) })
-    .send("logout successfull");
+    .send("Logout successfull");
 });
 
 module.exports = router;

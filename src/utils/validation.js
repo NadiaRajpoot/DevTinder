@@ -35,7 +35,7 @@ const validateProfileUpdateData = (req) => {
   // Check if 'about' section is valid length
   if (about && !validator.isLength(about, { min: 0, max: 200 })) {
     throw new Error(
-      "Invalid 'about' section! Please ensure it contains a maximum of 200 characters."
+      "Please ensure your about section contains a maximum of 200 characters."
     );
   }
   console.log("Validating profile update data...");

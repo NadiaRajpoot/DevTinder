@@ -31,10 +31,10 @@ router.get("/user/requests/recieved", userAuth, async (req, res) => {
       return res.status(404).json({ message: "No pending requests found!" });
     }
 
-   const data = connectionRequests.map((row)=>{
-     return row.fromUserId;
-    })
-    
+    const data = connectionRequests.map((row) => {
+      return row.fromUserId;
+    });
+
     res.json({
       message: "Data fetched successfully!",
       data: connectionRequests,
@@ -49,7 +49,6 @@ router.get("/user/requests/matched", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user; // Authenticated user object
 
-
     // Fetch all requests where the user is either the sender or receiver and status is "accepted"
     const matchedRequests = await ConnectionRequest.find({
       $or: [
@@ -60,19 +59,30 @@ router.get("/user/requests/matched", userAuth, async (req, res) => {
       .populate("fromUserId", USER_SAFE_DATA) // Populate sender's data
       .populate("toUserId", USER_SAFE_DATA); // Populate receiver's data
 
-    // Extract only the matched user data (the other user in the connection)
-    // const data = matchedRequests.map((row) => {
-    //   if (row.fromUserId.toString() === loggedInUser._id.toString()) {
-    //     return row.toUserId; // If the logged-in user is the sender, return the receiver
-    //   }
-    //   return row.fromUserId; // Otherwise, return the sender
-    // });
+
+
+
+    const data = matchedRequests.map((row) => {
+      if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
+        // Logged-in user is sender, return receiver's data
+        return {
+          user: row.toUserId,      
+          _id: row._id,
+        };
+      } else {
+        // Logged-in user is receiver, return sender's data
+        return {
+          user: row.fromUserId,    
+          _id: row._id,
+        };
+      }
+    });
 
     if (!matchedRequests) {
       return res.status(404).json({ message: "No matches found!" });
     }
 
-    res.json({ message: "Data fetched successfully!", data: matchedRequests });
+    res.json({ message: "Data fetched successfully!", data: data });
   } catch (err) {
     res.status(400).send(`Error: ${err.message}`);
   }
@@ -84,10 +94,9 @@ router.get("/feed", userAuth, async (req, res) => {
     const loggedInUser = req.user; // Authenticated user object
 
     const pageNumber = parseInt(req.query.page) || 1;
-   let limit = req.query.limit || 10
-    limit = limit > 50  ?  50 : limit;
-    const skip = (pageNumber-1) * limit;
-
+    let limit = req.query.limit || 10;
+    limit = limit > 50 ? 50 : limit;
+    const skip = (pageNumber - 1) * limit;
 
     // Fetch all connection requests involving the logged-in user
     const connectionRequests = await ConnectionRequest.find({
@@ -102,11 +111,17 @@ router.get("/feed", userAuth, async (req, res) => {
       hideUsersFromFeed.add(req.toUserId.toString());
     });
 
+  
     // Fetch users not involved in any connection with the logged-in user
     const users = await User.find({
-      _id: { $nin: Array.from(hideUsersFromFeed) }, // Exclude IDs in the set
-      _id: {$ne: loggedInUser._id}
-    }).select(USER_SAFE_DATA).skip(skip).limit(limit)
+      _id: { 
+        $nin: [...Array.from(hideUsersFromFeed), loggedInUser._id] 
+      }
+    }).select(USER_SAFE_DATA)
+      .skip(skip)
+      .limit(limit);
+      
+
 
     res.json({ message: "Data fetched successfully!", data: users });
   } catch (err) {

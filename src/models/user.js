@@ -10,10 +10,12 @@ const userSchema = new mongoose.Schema(
       minLength: 3,
       maxLength: 50,
     },
+
     lastName: {
       type: String,
       required: [true, "lastName is required!"],
     },
+
     emailId: {
       type: String,
      
@@ -26,6 +28,7 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+
     password: {
       type: String,
       validate: {
@@ -34,6 +37,7 @@ const userSchema = new mongoose.Schema(
       },
       required: [true, "Password is requuired!"],
     },
+
     age: {
       type: String,
       validate(value) {
@@ -42,6 +46,7 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
+
     mobileNumber: {
       type: String,
       validate: {
@@ -49,6 +54,7 @@ const userSchema = new mongoose.Schema(
         message: "Enter a valid mobile number!",
       },
     },
+
     gender: {
       type: String,
       validate(value) {
@@ -57,10 +63,12 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
+
     about: {
       type: String,
       default: "This is a default about!",
     },
+
     photoURL: {
       type: String,
       validate: {
@@ -74,7 +82,36 @@ const userSchema = new mongoose.Schema(
     skills: {
       type: [String],
     },
-  },
+
+    city: {
+      type: String,
+      required : [true  , "city is required field"],
+      default: "karachi"
+    },
+
+    country: {
+      type: String,
+      required : [true  , "country / region is required field"],
+      default : "Pakistan"
+    },
+    headline: {
+      type: String,
+      required : [true  , "Headline is required field"],
+      default: "This is default headline"
+    },
+
+    coverPhotoURL: {
+      type: String,
+      validate: {
+        validator: (URL) => validator.isURL(URL),
+        message: "Enter a valid photo URL!",
+      },
+
+      default:
+        "https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG.png",
+    },
+    },
+  
   {
     timestamps: true,
   }
