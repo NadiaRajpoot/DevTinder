@@ -14,6 +14,11 @@ const USER_SAFE_DATA = [
   "mobileNumber",
   "photoURL",
   "skills",
+  "headline",
+  "city",
+  "country",
+  "coverPhotoURL",
+  "emailId",
 ];
 
 // API to get all received connection requests
@@ -52,28 +57,28 @@ router.get("/user/requests/matched", userAuth, async (req, res) => {
     // Fetch all requests where the user is either the sender or receiver and status is "accepted"
     const matchedRequests = await ConnectionRequest.find({
       $or: [
-        { toUserId: loggedInUser._id, status: "accepted" },
-        { fromUserId: loggedInUser._id, status: "accepted" },
+        { toUserId: loggedInUser?._id, status: "accepted" },
+        { fromUserId: loggedInUser?._id, status: "accepted" },
       ],
     })
       .populate("fromUserId", USER_SAFE_DATA) // Populate sender's data
       .populate("toUserId", USER_SAFE_DATA); // Populate receiver's data
 
-
-
-
     const data = matchedRequests.map((row) => {
-      if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
-        // Logged-in user is sender, return receiver's data
+     
+      
+      if (row?.fromUserId?._id.toString() === loggedInUser?._id?.toString()) {
+        // Logged-in user is sender, return receiver's 
+      
         return {
-          user: row.toUserId,      
-          _id: row._id,
+          user: row?.toUserId,
+          _id: row?._id,
         };
       } else {
         // Logged-in user is receiver, return sender's data
         return {
-          user: row.fromUserId,    
-          _id: row._id,
+          user: row?.fromUserId,
+          _id: row?._id,
         };
       }
     });
@@ -111,17 +116,15 @@ router.get("/feed", userAuth, async (req, res) => {
       hideUsersFromFeed.add(req.toUserId.toString());
     });
 
-  
     // Fetch users not involved in any connection with the logged-in user
     const users = await User.find({
-      _id: { 
-        $nin: [...Array.from(hideUsersFromFeed), loggedInUser._id] 
-      }
-    }).select(USER_SAFE_DATA)
+      _id: {
+        $nin: [...Array.from(hideUsersFromFeed), loggedInUser._id],
+      },
+    })
+      .select(USER_SAFE_DATA)
       .skip(skip)
       .limit(limit);
-      
-
 
     res.json({ message: "Data fetched successfully!", data: users });
   } catch (err) {

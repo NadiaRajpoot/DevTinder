@@ -12,7 +12,8 @@ const validateSignUpData = (req) => {
 };
 
 const validateProfileUpdateData = (req) => {
-  const { mobileNumber, gender, photoURL, about, skills, age } = req.body;
+  const { mobileNumber, gender, photoURL, about, skills, age, headline, city, country } =
+    req.body;
 
   // Check if mobile number is valid
   if (mobileNumber && !validator.isMobilePhone(mobileNumber)) {
@@ -21,21 +22,29 @@ const validateProfileUpdateData = (req) => {
     );
   }
 
+  if(headline && !validator.isLength(headline , {min:0 , max: 100})){
+    throw new Error(
+       "Please ensure your headline section contains a maximum of 50 characters."
+    );
+  }
+
   // Check if gender is valid
   if (gender && !["male", "female", "others"].includes(gender)) {
     throw new Error(
       "Invalid gender! Please select 'male', 'female', or 'others'."
+     
     );
   }
+
   // Check if photo URL is valid
   if (photoURL && !validator.isURL(photoURL)) {
     throw new Error("Invalid photo URL! Please provide a valid URL.");
   }
 
   // Check if 'about' section is valid length
-  if (about && !validator.isLength(about, { min: 0, max: 200 })) {
+  if (about && !validator.isLength(about, { min: 0, max: 300 })) {
     throw new Error(
-      "Please ensure your about section contains a maximum of 200 characters."
+      "Please ensure your about section contains a maximum of 300 characters."
     );
   }
   console.log("Validating profile update data...");
@@ -54,11 +63,15 @@ const validateProfileUpdateData = (req) => {
     "gender",
     "mobileNumber",
     "age",
-    "firstName",
-    "lastName",
+    
+    "coverPhotoURL",
+    "headline",
+    "city",
+    "country"
   ];
   const requestedUpdates = Object.keys(req.body);
 
+  
   // Check if all requested updates are allowed
   const isAllowedUpdates = requestedUpdates.every((k) =>
     ALLOWED_UPDATES.includes(k)
@@ -68,6 +81,7 @@ const validateProfileUpdateData = (req) => {
     const notAllowedUpdates = requestedUpdates.filter(
       (k) => !ALLOWED_UPDATES.includes(k)
     );
+
     const errorMessage = `You are trying to update the following keys which are not allowed: ${notAllowedUpdates.join(
       ", "
     )}`;
@@ -75,7 +89,7 @@ const validateProfileUpdateData = (req) => {
     console.log("Not allowed updates:", notAllowedUpdates);
 
     // Throw an error with the detailed message
-    throw new Error("errorrr" + errorMessage);
+    throw new Error(errorMessage);
   }
 
   console.log("Validation successful!");

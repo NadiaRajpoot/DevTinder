@@ -81,8 +81,8 @@ const userSchema = new mongoose.Schema(
     },
     skills: {
       type: [String],
+      
     },
-
     city: {
       type: String,
       required : [true  , "city is required field"],
