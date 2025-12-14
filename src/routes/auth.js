@@ -49,9 +49,12 @@ router.post("/login", async (req, res) => {
       throw new Error("invalid credentials!");
     } else {
       const token = await user.getJwt();
-      res.cookie("token", token, {
-        expires: new Date(Date.now() + 8 * 3600000),
-      });
+     res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,        // MUST be true on Render (HTTPS)
+      sameSite: "none",    // MUST for cross-origin
+      maxAge: 8 * 60 * 60 * 1000,
+});
       res.json({message: "login successfull" , data:user});
     }
   } catch (err) {
