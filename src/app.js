@@ -35,7 +35,7 @@ const app = express();
 
 const allowedOrigins = process.env.CLIENT_ORIGIN
   ? process.env.CLIENT_ORIGIN.split(",").map(origin => origin.trim())
-  : ["http://localhost:5173"]; // fallback for local dev
+  : ["http://localhost:5173" , "https://devtinder-frontend-r8d2.onrender.com"]; // fallback for local dev
 
 app.use(
   cors({
