@@ -5,7 +5,7 @@ const ConnectionRequest = require("../models/conncetionRequest");
 const User = require("../models/user");
 
 //send request api
-router.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {
+router.post("/send/:status/:toUserId", userAuth, async (req, res) => {
   try {
     const fromUserId = req.user._id;
     const toUserId = req.params.toUserId;
@@ -63,7 +63,7 @@ router.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {
 
 //API to accept connection request
 router.post(
-  "/request/review/:status/:requestId",
+  "/review/:status/:requestId",
   userAuth,
   async (req, res) => {
     try {
@@ -99,7 +99,7 @@ router.post(
   }
 );
 //api to delete request
-router.delete("/request/remove/:requestId", userAuth, async (req, res) => {
+router.delete("/remove/:requestId", userAuth, async (req, res) => {
   try {
     
     const { requestId } = req.params;

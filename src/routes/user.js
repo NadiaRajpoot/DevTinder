@@ -22,7 +22,7 @@ const USER_SAFE_DATA = [
 ];
 
 // API to get all received connection requests
-router.get("/user/requests/recieved", userAuth, async (req, res) => {
+router.get("/requests/recieved", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user; // Authenticated user object
 
@@ -50,7 +50,7 @@ router.get("/user/requests/recieved", userAuth, async (req, res) => {
 });
 
 // API to get matched users (mutual accepted requests)
-router.get("/user/requests/matched", userAuth, async (req, res) => {
+router.get("/requests/matched", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user; // Authenticated user object
 

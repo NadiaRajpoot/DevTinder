@@ -5,7 +5,7 @@ const { validateProfileUpdateData } = require("../utils/validation");
 const bcrypt = require("bcrypt");
 
 // Profile API
-router.get("/profile/view", userAuth, async (req, res) => {
+router.get("/view", userAuth, async (req, res) => {
   try {
     const user = req.user;
 
@@ -27,7 +27,7 @@ router.get("/profile/view", userAuth, async (req, res) => {
 });
 
 // Profile Edit API
-router.patch("/profile/edit", userAuth, async (req, res) => {
+router.patch("/edit", userAuth, async (req, res) => {
   try {
     console.log(validateProfileUpdateData(req));
 
@@ -57,7 +57,7 @@ router.patch("/profile/edit", userAuth, async (req, res) => {
 });
 
 // Update Profile Password
-router.patch("/profile/password", userAuth, async (req, res) => {
+router.patch("/password", userAuth, async (req, res) => {
   try {
     const { password, newPassword } = req.body;
     const user = req.user;
