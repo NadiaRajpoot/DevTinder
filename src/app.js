@@ -33,25 +33,30 @@ const app = express();
    - Required for cookies / JWT auth
 =================================================== */
 
+// Update CORS configuration in server.js
 const allowedOrigins = process.env.CLIENT_ORIGIN
   ? process.env.CLIENT_ORIGIN.split(",").map(origin => origin.trim())
-  : ["http://localhost:5173" , "https://devtinder-frontend-r8d2.onrender.com"]; // fallback for local dev
+  : ["http://localhost:5173", "https://devtinder-frontend-r8d2.onrender.com"];
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow non-browser requests (Postman, curl, mobile apps)
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl, postman)
       if (!origin) return callback(null, true);
-
-      // Allow only whitelisted origins
-      if (allowedOrigins.includes(origin)) {
+      
+      // Check if origin is in allowedOrigins
+      if (allowedOrigins.indexOf(origin) !== -1) {
         return callback(null, true);
+      } else {
+        // If you want to allow all origins (not recommended for production)
+        // return callback(null, true);
+        
+        // Otherwise, return error
+        return callback(new Error(`CORS policy: Origin ${origin} not allowed`), false);
       }
-
-      console.warn("🚫 CORS blocked origin:", origin);
-      callback(new Error("Not allowed by CORS"));
     },
-    credentials: true // allow cookies / auth headers
+    credentials: true, // This is CRITICAL for cookies
+    exposedHeaders: ['set-cookie'] // Optional: expose set-cookie header
   })
 );
 
