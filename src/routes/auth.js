@@ -55,44 +55,16 @@ router.post("/login", async (req, res) => {
 
     // Validate password
     const isPasswordValid = await user.validatePassword(password);
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials"
+
+    if (isPasswordValid != true) {
+      throw new Error("invalid credentials!");
+    } else {
+      const token = await user.getJwt();
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 3600000),
       });
+      res.json({message: "login successfull" , data:user});
     }
-
-    // Generate token
-    const token = await user.getJwt();
-
-    // Dynamic cookie configuration
-    const isProduction = process.env.NODE_ENV === 'production';
-    const isHTTPS = req.protocol === 'https' || isProduction;
-
-    const cookieOptions = {
-      httpOnly: true,
-      maxAge: 8 * 60 * 60 * 1000, // 8 hours
-      secure: isHTTPS, // true in production/HTTPS, false in local development
-      sameSite: isHTTPS ? "none" : "lax", // "none" for HTTPS, "lax" for HTTP
-      path: "/" // Available on all routes
-    };
-
-    // Set cookie
-    res.cookie("token", token, cookieOptions);
-
-    // Remove sensitive data from user object
-    const userResponse = user.toObject();
-    delete userResponse.password;
-    delete userResponse.__v;
-
-    // Send response
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: userResponse,
-      token: token // Optional: include token in response for mobile apps/Postman
-    });
-
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({
