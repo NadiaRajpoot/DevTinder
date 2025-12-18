@@ -64,8 +64,8 @@ router.post("/login", async (req, res) => {
       res.cookie("token", token, {
         expires: new Date(Date.now() + 8 * 3600000),
         httpOnly: true,
-        sameSite: isProd ? "none" : "lax",
-        secure: isProd ? true : false,
+        secure: true,       
+        sameSite: "none", 
         path: "/",
       });
       res.json({ message: "login successfull", data: user });
