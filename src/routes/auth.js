@@ -71,7 +71,8 @@ router.post("/login", async (req, res) => {
         path: "/",
       });
       console.log("Cookie set. Response headers:", res.getHeaders());
-      res.json({ message: "login successfull", data: user });
+      // Also include token in body so clients can use Authorization header when third-party cookies are blocked
+      res.json({ message: "login successfull", data: user, token });
     }
   } catch (err) {
     console.error("Login error:", err);

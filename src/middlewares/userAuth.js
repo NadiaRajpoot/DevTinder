@@ -4,7 +4,12 @@ const userAuth = async (req, res, next) => {
   try {
     console.log("All cookies:", req.cookies);
     console.log("Cookie header:", req.headers.cookie);
-    const token = req.cookies.token;
+    let token = req.cookies.token;
+    const authHeader = req.headers.authorization;
+    if (!token && authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+      console.log("Token from Authorization header detected.");
+    }
     console.log("Token from cookies:", token);
     if (!token) {
       
