@@ -4,6 +4,8 @@ const User = require("../models/user");
 const userAuth = async (req, res, next) => {
   try {
     const token = req.cookies.token; // ✅ FIXED
+console.log("ALL COOKIES:", req.cookies);
+console.log("TOKEN ONLY:", req.cookies?.token);
 
     console.log("Token from cookies:", token);
 
