@@ -60,14 +60,17 @@ router.post("/login", async (req, res) => {
       throw new Error("invalid credentials!");
     } else {
       const token = await user.getJwt();
-      const isProd = process.env.NODE_ENV === "production";
+      console.log("Setting cookie with token:", token.substring(0, 20) + "...");
+      console.log("Request origin:", req.headers.origin);
+      const isProduction = process.env.NODE_ENV === "production";
       res.cookie("token", token, {
         expires: new Date(Date.now() + 8 * 3600000),
         httpOnly: true,
-        secure: true,       
-        sameSite: "none", 
+        secure: isProduction,       
+        sameSite: isProduction ? "none" : "lax", 
         path: "/",
       });
+      console.log("Cookie set. Response headers:", res.getHeaders());
       res.json({ message: "login successfull", data: user });
     }
   } catch (err) {
